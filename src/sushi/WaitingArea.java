@@ -24,7 +24,8 @@ public class WaitingArea {
      * @param customer A customer created by Door, trying to enter the waiting area
      */
     public boolean enter(final Customer customer) {
-        final boolean result = queue.add(customer);
+        final boolean result = queue.offer(customer);
+        SushiBar.write("Waiting Area: new customer added: " + result);
         synchronized (this) {
             this.notify();
         }
@@ -36,6 +37,8 @@ public class WaitingArea {
      */
     public Optional<Customer> pollNext() {
         final Customer c = queue.poll();
+        SushiBar.write("Waiting Area: polled customer from queue, left in queue: " + queue.size());
+        SushiBar.write("Waiting Area: notifying door");
         synchronized (Door.doorMonitor) {
             Door.doorMonitor.notify();
         }

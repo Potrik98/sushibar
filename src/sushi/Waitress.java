@@ -31,19 +31,30 @@ public class Waitress implements Runnable {
     public void run() {
         final Random random = new Random();
         while (SushiBar.isOpen) {
+            SushiBar.write(this + " is checking for customers");
             Optional<Customer> customer = waitingArea.pollNext();
             if (customer.isPresent()) {
                 final Customer c = customer.get();
-                SushiBar.write("Waitress " + waitressId + " is serving customer " + c.getCustomerID());
+                SushiBar.write(this + " is serving customer " + c.getCustomerID());
                 final int t = random.nextInt(SushiBar.waitressWait);
                 uncheckRun(() -> Thread.sleep(t));
                 c.order();
+                SushiBar.write(this + " done serving customer");
             } else {
-                SushiBar.write("Waitress " + waitressId + " waiting for customers");
+                SushiBar.write(this + " waiting for customers");
                 synchronized (waitingArea) {
                     uncheckRun(waitingArea::wait);
                 }
+                SushiBar.write(this + " notified");
             }
         }
+        SushiBar.write(this + " stopping, notifying door");
+        synchronized (Door.doorMonitor) {
+            Door.doorMonitor.notify();
+        }
+    }
+
+    public String toString() {
+        return "Waitress " + waitressId;
     }
 }

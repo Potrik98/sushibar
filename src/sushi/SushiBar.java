@@ -14,13 +14,13 @@ import static sushi.StreamUtils.uncheckRun;
 public class SushiBar {
 
     //SushiBar settings
-    private static int waitingAreaCapacity = 15;
-    private static int waitressCount = 8;
+    private static int waitingAreaCapacity = 5;
+    private static int waitressCount = 2;
     private static int duration = 4;
     public static int maxOrder = 10;
     public static int waitressWait = 50; // Used to calculate the time the waitress spends before taking the order
     public static int customerWait = 2000; // Used to calculate the time the customer spends eating
-    public static int doorWait = 10; // Used to calculate the interval at which the door tries to create a customer
+    public static int doorWait = 1; // Used to calculate the interval at which the door tries to create a customer
     public static boolean isOpen = true;
 
     //Creating log file
@@ -47,12 +47,12 @@ public class SushiBar {
         final WaitingArea w = new WaitingArea(waitingAreaCapacity);
         final Door door = new Door(w);
 
-        Door.doorThread = new Thread(door);
+        Door.doorThread = new Thread(door, "Door");
         Door.doorThread.start();
 
         final List<Thread> waitressThreads = IntStream.range(0, waitressCount)
                 .mapToObj(i -> new Waitress(w, i))
-                .map(Thread::new)
+                .map(x -> new Thread(x, x.toString()))
                 .collect(Collectors.toList());
         waitressThreads.forEach(Thread::start);
 
@@ -70,9 +70,10 @@ public class SushiBar {
         try {
             FileWriter fw = new FileWriter(log.getAbsoluteFile(), true);
             BufferedWriter bw = new BufferedWriter(fw);
-            bw.write(Clock.getTime() + ", " + str + "\n");
+            final String text = "[" + Thread.currentThread().getName() + "] " + Clock.getTime() + ", " + str;
+            bw.write(text + "\n");
             bw.close();
-            System.out.println(Clock.getTime() + ", " + str);
+            System.out.println(text);
         } catch (IOException e) {
             // TODO Auto-generated catch block
             e.printStackTrace();

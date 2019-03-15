@@ -37,14 +37,15 @@ public class Door implements Runnable {
                 final boolean success = waitingArea.enter(c);
 
                 if (!success) {
-                    SushiBar.write("Door: Waiting area full!");
+                    SushiBar.write("Door: Waiting area full, waiting for space");
                     synchronized (doorMonitor) {
                         uncheckRun(doorMonitor::wait);
                     }
+                    SushiBar.write("Door: notified");
                 }
             }
         }
-        SushiBar.write("Door closing");
+        SushiBar.write("Door closing, notifying all waitresses");
         synchronized (waitingArea) {
             waitingArea.notifyAll();
         }
